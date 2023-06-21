@@ -184,15 +184,18 @@ public class ShapesManager : MonoBehaviour
         if (ShowDebugInfo)
             DebugText.text = DebugUtilities.GetArrayContents(shapes);
 
+        
         if (state == GameState.None)
         {
             //user has clicked or touched
             if (Input.GetMouseButtonDown(0))
             {
                 //get the hit position
-                var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-                if (hit.collider != null) //we have a hit!!!
+                RaycastHit hit;
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out hit,100)) //we have a hit!!!
                 {
+                    Debug.DrawLine(ray.origin, hit.point,Color.green);
                     hitGo = hit.collider.gameObject;
                     state = GameState.SelectionStarted;
                 }
@@ -205,18 +208,18 @@ public class ShapesManager : MonoBehaviour
             if (Input.GetMouseButton(0))
             {
                 
-
-                var hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-                //we have a hit
-                if (hit.collider != null && hitGo != hit.collider.gameObject)
+                RaycastHit hit;
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out hit,100) && hitGo != hit.collider.gameObject) //we have a hit!!!
                 {
+                    Debug.DrawLine(ray.origin, hit.point,Color.red);
 
                     //user did a hit, no need to show him hints 
                     StopCheckForPotentialMatches();
 
                     //if the two shapes are diagonally aligned (different row and column), just return
                     if (!Utilities.AreVerticalOrHorizontalNeighbors(hitGo.GetComponent<Shape>(),
-                        hit.collider.gameObject.GetComponent<Shape>()))
+                            hit.collider.gameObject.GetComponent<Shape>()))
                     {
                         state = GameState.None;
                     }
@@ -227,6 +230,9 @@ public class ShapesManager : MonoBehaviour
                         StartCoroutine(FindMatchesAndCollapse(hit));
                     }
                 }
+                
+                //we have a hit
+           
             }
         }
     }
@@ -250,7 +256,7 @@ public class ShapesManager : MonoBehaviour
 
 
 
-    private IEnumerator FindMatchesAndCollapse(RaycastHit2D hit2)
+    private IEnumerator FindMatchesAndCollapse(RaycastHit hit2)
     {
         //get the second item that was part of the swipe
         var hitGo2 = hit2.collider.gameObject;
