@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
-using UnityEditorInternal;
 using UnityEngine.UI;
 
 
@@ -283,9 +282,6 @@ public class ShapesManager : MonoBehaviour
 
         var hitGo1Dir = hitGo.transform.position - hitGo2.transform.position;
         var hitGo2Dir = hitGo2.transform.position - hitGo.transform.position;
-
-        Debug.LogError("hitGo1Rot = " + hitGo1Dir);
-        Debug.LogError("hitGo2Rot = " + hitGo2Dir);
 
         hitGo.transform.positionTo(Constants.AnimationDuration, hitGo2.transform.position);
         hitGo2.transform.positionTo(Constants.AnimationDuration, hitGo.transform.position);
