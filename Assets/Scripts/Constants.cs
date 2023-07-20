@@ -8,7 +8,7 @@ using System.Text;
     {
         public static readonly int Rows = 6;
         public static readonly int Columns = 6;
-        public static readonly float AnimationDuration =  0.4f;
+        public static readonly float AnimationDuration =  0.25f;
 
         public static readonly float MoveAnimationMinDuration = 0.1f;
 

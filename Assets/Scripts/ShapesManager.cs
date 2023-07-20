@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine.UI;
 
 
 public class ShapesManager : MonoBehaviour
 {
     public Text DebugText, ScoreText;
+
     public bool ShowDebugInfo = false;
     //candy graphics taken from http://opengameart.org/content/candy-pack-1
 
@@ -31,6 +33,7 @@ public class ShapesManager : MonoBehaviour
     IEnumerable<GameObject> potentialMatches;
 
     public SoundManager soundManager;
+
     void Awake()
     {
         DebugText.enabled = ShowDebugInfo;
@@ -55,14 +58,13 @@ public class ShapesManager : MonoBehaviour
         foreach (var item in CandyPrefabs)
         {
             item.GetComponent<Shape>().Type = item.name;
-
         }
 
         //assign the name of the respective "normal" candy as the type of the Bonus
         foreach (var item in BonusPrefabs)
         {
-            item.GetComponent<Shape>().Type = CandyPrefabs.
-                Where(x => x.GetComponent<Shape>().Type.Contains(item.name.Split('_')[1].Trim())).Single().name;
+            item.GetComponent<Shape>().Type = CandyPrefabs
+                .Where(x => x.GetComponent<Shape>().Type.Contains(item.name.Split('_')[1].Trim())).Single().name;
         }
     }
 
@@ -82,13 +84,11 @@ public class ShapesManager : MonoBehaviour
         {
             for (int column = 0; column < Constants.Columns; column++)
             {
-
                 GameObject newCandy = null;
 
                 newCandy = GetSpecificCandyOrBonusForPremadeLevel(premadeLevel[row, column]);
 
                 InstantiateAndPlaceNewCandy(row, column, newCandy);
-
             }
         }
 
@@ -110,27 +110,27 @@ public class ShapesManager : MonoBehaviour
         {
             for (int column = 0; column < Constants.Columns; column++)
             {
-
                 GameObject newCandy = GetRandomCandy();
 
                 //check if two previous horizontal are of the same type
                 while (column >= 2 && shapes[row, column - 1].GetComponent<Shape>()
-                    .IsSameType(newCandy.GetComponent<Shape>())
-                    && shapes[row, column - 2].GetComponent<Shape>().IsSameType(newCandy.GetComponent<Shape>()))
+                                       .IsSameType(newCandy.GetComponent<Shape>())
+                                   && shapes[row, column - 2].GetComponent<Shape>()
+                                       .IsSameType(newCandy.GetComponent<Shape>()))
                 {
                     newCandy = GetRandomCandy();
                 }
 
                 //check if two previous vertical are of the same type
                 while (row >= 2 && shapes[row - 1, column].GetComponent<Shape>()
-                    .IsSameType(newCandy.GetComponent<Shape>())
-                    && shapes[row - 2, column].GetComponent<Shape>().IsSameType(newCandy.GetComponent<Shape>()))
+                                    .IsSameType(newCandy.GetComponent<Shape>())
+                                && shapes[row - 2, column].GetComponent<Shape>()
+                                    .IsSameType(newCandy.GetComponent<Shape>()))
                 {
                     newCandy = GetRandomCandy();
                 }
 
                 InstantiateAndPlaceNewCandy(row, column, newCandy);
-
             }
         }
 
@@ -138,11 +138,10 @@ public class ShapesManager : MonoBehaviour
     }
 
 
-
     private void InstantiateAndPlaceNewCandy(int row, int column, GameObject newCandy)
     {
         GameObject go = Instantiate(newCandy,
-            BottomRight + new Vector2(column * CandySize.x, row * CandySize.y), Quaternion.identity)
+                BottomRight + new Vector2(column * CandySize.x, row * CandySize.y), Quaternion.identity)
             as GameObject;
 
         //assign the specific properties
@@ -156,11 +155,9 @@ public class ShapesManager : MonoBehaviour
         for (int column = 0; column < Constants.Columns; column++)
         {
             SpawnPositions[column] = BottomRight
-                + new Vector2(column * CandySize.x, Constants.Rows * CandySize.y);
+                                     + new Vector2(column * CandySize.x, Constants.Rows * CandySize.y);
         }
     }
-
-
 
 
     /// <summary>
@@ -184,7 +181,7 @@ public class ShapesManager : MonoBehaviour
         if (ShowDebugInfo)
             DebugText.text = DebugUtilities.GetArrayContents(shapes);
 
-        
+
         if (state == GameState.None)
         {
             //user has clicked or touched
@@ -193,13 +190,12 @@ public class ShapesManager : MonoBehaviour
                 //get the hit position
                 RaycastHit hit;
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out hit,100)) //we have a hit!!!
+                if (Physics.Raycast(ray, out hit, 100)) //we have a hit!!!
                 {
-                    Debug.DrawLine(ray.origin, hit.point,Color.green,0.2f);
+                    Debug.DrawLine(ray.origin, hit.point, Color.green, 0.2f);
                     hitGo = hit.collider.gameObject;
                     state = GameState.SelectionStarted;
                 }
-                
             }
         }
         else if (state == GameState.SelectionStarted)
@@ -207,12 +203,11 @@ public class ShapesManager : MonoBehaviour
             //user dragged
             if (Input.GetMouseButton(0))
             {
-                
                 RaycastHit hit;
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out hit,100) && hitGo != hit.collider.gameObject) //we have a hit!!!
+                if (Physics.Raycast(ray, out hit, 100) && hitGo != hit.collider.gameObject) //we have a hit!!!
                 {
-                    Debug.DrawLine(ray.origin, hit.point,Color.red);
+                    Debug.DrawLine(ray.origin, hit.point, Color.red);
 
                     //user did a hit, no need to show him hints 
                     StopCheckForPotentialMatches();
@@ -230,9 +225,8 @@ public class ShapesManager : MonoBehaviour
                         StartCoroutine(FindMatchesAndCollapse(hit));
                     }
                 }
-                
+
                 //we have a hit
-           
             }
         }
     }
@@ -254,7 +248,30 @@ public class ShapesManager : MonoBehaviour
     }
 
 
+    private Vector3 GetMovementRotation(Vector3 dir)
+    {
+        if (dir.normalized.x == 1)
+        {
+            return Vector3.up * 90f;
+        }
 
+        if (dir.normalized.x == -1)
+        {
+            return Vector3.down * 90f;
+        }
+
+        if (dir.normalized.y == -1)
+        {
+            return Vector3.right * 90f;
+        }
+
+        if (dir.normalized.y == 1)
+        {
+            return Vector3.left * 90f;
+        }
+
+        return Vector3.zero;
+    }
 
     private IEnumerator FindMatchesAndCollapse(RaycastHit hit2)
     {
@@ -263,9 +280,20 @@ public class ShapesManager : MonoBehaviour
         shapes.Swap(hitGo, hitGo2);
 
         //move the swapped ones
+
+        var hitGo1Dir = hitGo.transform.position - hitGo2.transform.position;
+        var hitGo2Dir = hitGo2.transform.position - hitGo.transform.position;
+
+        Debug.LogError("hitGo1Rot = " + hitGo1Dir);
+        Debug.LogError("hitGo2Rot = " + hitGo2Dir);
+
         hitGo.transform.positionTo(Constants.AnimationDuration, hitGo2.transform.position);
         hitGo2.transform.positionTo(Constants.AnimationDuration, hitGo.transform.position);
+        hitGo.transform.eulerAnglesTo(Constants.AnimationDuration, GetMovementRotation(hitGo1Dir));
+      //  hitGo2.transform.eulerAnglesTo(Constants.AnimationDuration, GetMovementRotation(hitGo2Dir));
         yield return new WaitForSeconds(Constants.AnimationDuration);
+        hitGo.transform.rotation = Quaternion.identity;
+        hitGo2.transform.rotation = Quaternion.identity;
 
         //get the matches via the helper methods
         var hitGomatchesInfo = shapes.GetMatches(hitGo);
@@ -279,15 +307,18 @@ public class ShapesManager : MonoBehaviour
         {
             hitGo.transform.positionTo(Constants.AnimationDuration, hitGo2.transform.position);
             hitGo2.transform.positionTo(Constants.AnimationDuration, hitGo.transform.position);
+            
+            hitGo.transform.eulerAnglesTo(Constants.AnimationDuration, GetMovementRotation(-hitGo1Dir));
             yield return new WaitForSeconds(Constants.AnimationDuration);
-
+            hitGo.transform.rotation = Quaternion.identity;
+            hitGo2.transform.rotation = Quaternion.identity;
             shapes.UndoSwap();
         }
 
         //if more than 3 matches and no Bonus is contained in the line, we will award a new Bonus
         bool addBonus = totalMatches.Count() >= Constants.MinimumMatchesForBonus &&
-            !BonusTypeUtilities.ContainsDestroyWholeRowColumn(hitGomatchesInfo.BonusesContained) &&
-            !BonusTypeUtilities.ContainsDestroyWholeRowColumn(hitGo2matchesInfo.BonusesContained);
+                        !BonusTypeUtilities.ContainsDestroyWholeRowColumn(hitGomatchesInfo.BonusesContained) &&
+                        !BonusTypeUtilities.ContainsDestroyWholeRowColumn(hitGo2matchesInfo.BonusesContained);
 
         Shape hitGoCache = null;
         if (addBonus)
@@ -335,14 +366,12 @@ public class ShapesManager : MonoBehaviour
             MoveAndAnimate(collapsedCandyInfo.AlteredCandy, maxDistance);
 
 
-
             //will wait for both of the above animations
             yield return new WaitForSeconds(Constants.MoveAnimationMinDuration * maxDistance);
 
             //search if there are matches with the new/collapsed items
-            totalMatches = shapes.GetMatches(collapsedCandyInfo.AlteredCandy).
-                Union(shapes.GetMatches(newCandyInfo.AlteredCandy)).Distinct();
-
+            totalMatches = shapes.GetMatches(collapsedCandyInfo.AlteredCandy)
+                .Union(shapes.GetMatches(newCandyInfo.AlteredCandy)).Distinct();
 
 
             timesRun++;
@@ -359,8 +388,9 @@ public class ShapesManager : MonoBehaviour
     private void CreateBonus(Shape hitGoCache)
     {
         GameObject Bonus = Instantiate(GetBonusFromType(hitGoCache.Type), BottomRight
-            + new Vector2(hitGoCache.Column * CandySize.x,
-                hitGoCache.Row * CandySize.y), Quaternion.identity)
+                                                                          + new Vector2(hitGoCache.Column * CandySize.x,
+                                                                              hitGoCache.Row * CandySize.y),
+                Quaternion.identity)
             as GameObject;
         shapes[hitGoCache.Row, hitGoCache.Column] = Bonus;
         var BonusShape = Bonus.GetComponent<Shape>();
@@ -369,8 +399,6 @@ public class ShapesManager : MonoBehaviour
         //add the proper Bonus type
         BonusShape.Bonus |= BonusType.DestroyWholeRowColumn;
     }
-
-
 
 
     /// <summary>
@@ -401,6 +429,7 @@ public class ShapesManager : MonoBehaviour
                 newCandyInfo.AddCandy(newCandy);
             }
         }
+
         return newCandyInfo;
     }
 
@@ -413,7 +442,8 @@ public class ShapesManager : MonoBehaviour
         foreach (var item in movedGameObjects)
         {
             item.transform.positionTo(Constants.MoveAnimationMinDuration * distance, BottomRight +
-                new Vector2(item.GetComponent<Shape>().Column * CandySize.x, item.GetComponent<Shape>().Row * CandySize.y));
+                new Vector2(item.GetComponent<Shape>().Column * CandySize.x,
+                    item.GetComponent<Shape>().Row * CandySize.y));
         }
     }
 
@@ -477,6 +507,7 @@ public class ShapesManager : MonoBehaviour
             if (item.GetComponent<Shape>().Type.Contains(color))
                 return item;
         }
+
         throw new System.Exception("Wrong type");
     }
 
@@ -513,9 +544,9 @@ public class ShapesManager : MonoBehaviour
             {
                 if (item == null) break;
 
-                Color c = item.GetComponent<SpriteRenderer>().color;
+                Color c = item.GetComponentInChildren<MeshRenderer>().material.color;
                 c.a = 1.0f;
-                item.GetComponent<SpriteRenderer>().color = c;
+                item.GetComponentInChildren<MeshRenderer>().material.color = c;
             }
     }
 
@@ -531,7 +562,6 @@ public class ShapesManager : MonoBehaviour
         {
             while (true)
             {
-
                 AnimatePotentialMatchesCoroutine = Utilities.AnimatePotentialMatches(potentialMatches);
                 StartCoroutine(AnimatePotentialMatchesCoroutine);
                 yield return new WaitForSeconds(Constants.WaitBeforePotentialMatchesCheck);
@@ -555,7 +585,6 @@ public class ShapesManager : MonoBehaviour
                 if (item.GetComponent<Shape>().Type.Contains(tokens[0].Trim()))
                     return item;
             }
-
         }
         else if (tokens.Count() == 2 && tokens[1].Trim() == "B")
         {
@@ -568,7 +597,4 @@ public class ShapesManager : MonoBehaviour
 
         throw new System.Exception("Wrong type, check your premade level");
     }
-
-
-
 }
