@@ -195,7 +195,7 @@ public class ShapesManager : MonoBehaviour
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 if (Physics.Raycast(ray, out hit,100)) //we have a hit!!!
                 {
-                    Debug.DrawLine(ray.origin, hit.point,Color.green);
+                    Debug.DrawLine(ray.origin, hit.point,Color.green,0.2f);
                     hitGo = hit.collider.gameObject;
                     state = GameState.SelectionStarted;
                 }
